@@ -24,26 +24,81 @@ function Checkout({ cart, clearCart }) {
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    setError("");
   }
 
-  function handlePlaceOrder() {
+  async function handlePlaceOrder() {
     if (
-      !formData.name ||
-      !formData.email ||
-      !formData.address ||
-      !formData.phone
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.address.trim() ||
+      !formData.phone.trim()
     ) {
       setError("Please fill in all fields.");
       return;
     }
 
-    const newOrderId =
-      "ORD-" + Math.floor(100000 + Math.random() * 900000);
+    if (cart.length === 0) {
+      setError("Your cart is empty.");
+      return;
+    }
 
-    setOrderId(newOrderId);
-    setError("");
-    setOrderPlaced(true);
-    clearCart();
+    try {
+      const orderData = {
+        customerName: formData.name,
+        customerEmail: formData.email,
+
+        products: cart.map((product) => ({
+          productId: product.id || product._id,
+          name: product.name,
+          price: Number(product.price),
+          quantity: product.quantity,
+          image: product.image,
+        })),
+
+        totalAmount: total,
+      };
+
+      const response = await fetch(
+        "http://localhost:3001/api/orders",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify(orderData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to place order"
+        );
+      }
+
+      console.log("Order saved:", data);
+
+      // MongoDB generated Order ID
+      setOrderId(data.order._id);
+
+      setError("");
+      setOrderPlaced(true);
+
+      // Cart clear
+      clearCart();
+
+    } catch (error) {
+      console.error("Place Order Error:", error);
+
+      setError(
+        "Something went wrong while placing your order."
+      );
+    }
   }
 
   /* =========================
@@ -78,7 +133,10 @@ function Checkout({ cart, clearCart }) {
 
           <div className="order-id-box">
             <span>Order ID</span>
-            <strong>{orderId}</strong>
+
+            <strong>
+              {orderId}
+            </strong>
           </div>
 
         </div>
@@ -117,23 +175,31 @@ function Checkout({ cart, clearCart }) {
         <div className="order-summary">
 
           <div className="checkout-card-title">
+
             <span>🧾</span>
 
             <div>
               <h3>Order Summary</h3>
+
               <p>
                 {cart.length} product
                 {cart.length !== 1 && "s"}
               </p>
             </div>
+
           </div>
 
 
           {cart.length === 0 ? (
 
             <div className="checkout-empty">
+
               <span>🛒</span>
-              <p>Your cart is empty.</p>
+
+              <p>
+                Your cart is empty.
+              </p>
+
             </div>
 
           ) : (
@@ -168,7 +234,9 @@ function Checkout({ cart, clearCart }) {
                     </div>
 
                     <strong>
-                      ${product.price * product.quantity}
+                      $
+                      {product.price *
+                        product.quantity}
                     </strong>
 
                   </div>
@@ -180,7 +248,9 @@ function Checkout({ cart, clearCart }) {
 
               <div className="checkout-total">
 
-                <span>Total</span>
+                <span>
+                  Total
+                </span>
 
                 <strong>
                   ${total}
@@ -206,8 +276,15 @@ function Checkout({ cart, clearCart }) {
             <span>👤</span>
 
             <div>
-              <h3>Customer Information</h3>
-              <p>Enter your delivery details</p>
+
+              <h3>
+                Customer Information
+              </h3>
+
+              <p>
+                Enter your delivery details
+              </p>
+
             </div>
 
           </div>
