@@ -24,7 +24,7 @@ function AdminProducts() {
 
   // Fetch Products
   const fetchProducts = () => {
-    fetch("http://localhost:3001/api/products")
+    fetch("https://shop-sphere-backend-sooty.vercel.app/api/products")
       .then((response) => response.json())
       .then((data) => {
 
@@ -71,8 +71,8 @@ function AdminProducts() {
     try {
 
       const url = editingId
-        ? `http://localhost:3001/api/products/${editingId}`
-        : "http://localhost:3001/api/products";
+  ? `https://shop-sphere-backend-sooty.vercel.app/api/products/${editingId}`
+  : "https://shop-sphere-backend-sooty.vercel.app/api/products";
 
       const method = editingId
         ? "PUT"
@@ -144,11 +144,11 @@ function AdminProducts() {
     try {
 
       const response = await fetch(
-        `http://localhost:3001/api/products/${id}`,
-        {
-          method: "DELETE"
-        }
-      );
+  `https://shop-sphere-backend-sooty.vercel.app/api/products/${id}`,
+  {
+    method: "DELETE"
+  }
+);
 
       if (!response.ok) {
         throw new Error(
